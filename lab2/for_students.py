@@ -80,9 +80,9 @@ for _ in range(generations):
     population = new_population
 
     # mutation
-    for individual in population:
+    for individual in population[:-n_elite]:
         index = random.randint(0, len(individual) - 1)
-        if individual[index] == True:
+        if individual[index]:
             individual[index] = False
         else:
             individual[index] = True
