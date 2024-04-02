@@ -6,6 +6,7 @@ from connect4 import Connect4
 from exceptions import AgentException
 
 def evaluation(connect4, player):
+    #add checking if i can stop enemy gro mwinning
     if connect4.wins == player:
         return 1
     elif connect4.wins is None:
@@ -25,7 +26,7 @@ def minmax(connect4, depth, max_player, initial_player):
         return evaluation(connect4, initial_player), random.choice(connect4.possible_drops())
 
     if max_player:
-        max_eval = math.inf
+        max_eval = -math.inf
         for m in connect4.possible_drops():
             connect4_copy = copy.deepcopy(connect4)
             connect4_copy.drop_token(m)
@@ -36,7 +37,7 @@ def minmax(connect4, depth, max_player, initial_player):
                 move = m
         return max_eval, move
     else:
-        min_eval = -math.inf
+        min_eval = math.inf
         for m in connect4.possible_drops():
             connect4_copy = copy.deepcopy(connect4)
             connect4_copy.drop_token(m)
@@ -55,6 +56,6 @@ class MinMaxAgent:
         if connect4.who_moves != self.my_token:
             raise AgentException('not my round')
         connect4_copy = copy.deepcopy(connect4)
-        minimax, move = minmax(connect4_copy, 3, True, self.my_token)
+        minimax, move = minmax(connect4_copy, 4, True, self.my_token)
         return move
 
