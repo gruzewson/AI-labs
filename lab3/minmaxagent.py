@@ -1,27 +1,44 @@
-from exceptions import AgentException
+import copy
 import math
+import random
+
+from connect4 import Connect4
+from exceptions import AgentException
 
 def evaluation(connect4, player):
-    return 1
+    if connect4.wins == player:
+        return 1
+    elif connect4.wins is None:
+        return 0
+    else:
+        return -1
 
-def minmax(connect4, depth, max_player, inital_player):
+def minmax(connect4, depth, max_player, initial_player):
     if connect4.game_over or depth == 0:
-        return evaluation(connect4, inital_player)
+        return evaluation(connect4, initial_player), random.choice(connect4.possible_drops())
 
     if max_player:
         max_eval = math.inf
-        for move in connect4.possible_drops():
-            #tutaj move jakos trza zrobic
-            eval = minmax(connect4, depth - 1, False, inital_player)
+        for m in connect4.possible_drops():
+            connect4_copy = copy.deepcopy(connect4)
+            connect4_copy.drop_token(m)
+            eval, move = minmax(connect4_copy, depth - 1, False, initial_player)
+            print(f"eval max: {eval}")
             max_eval = max(max_eval, eval)
-        return max_eval
+            if max_eval == eval:
+                move = m
+        return max_eval, move
     else:
         min_eval = -math.inf
-        for move in connect4.possible_drops():
-            #tutaj move jakos trza zrobic
-            eval = minmax(connect4, depth - 1, True, inital_player)
+        for m in connect4.possible_drops():
+            connect4_copy = copy.deepcopy(connect4)
+            connect4_copy.drop_token(m)
+            eval, move = minmax(connect4_copy, depth - 1, True, initial_player)
+            print(f"eval min: {eval}")
             min_eval = min(min_eval, eval)
-        return min_eval
+            if min_eval == eval:
+                move = m
+        return min_eval, move
 
 class MinMaxAgent:
     def __init__(self, my_token='o'):
@@ -30,5 +47,7 @@ class MinMaxAgent:
     def decide(self, connect4):
         if connect4.who_moves != self.my_token:
             raise AgentException('not my round')
-        connect4_copy = connect4
-        return minmax(connect4_copy, 3, True, self.my_token)
+        connect4_copy = copy.deepcopy(connect4)
+        minimax, move = minmax(connect4_copy, 3, True, self.my_token)
+        return move
+
