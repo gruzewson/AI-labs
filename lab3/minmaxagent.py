@@ -7,8 +7,15 @@ from exceptions import AgentException
 
 def evaluation(connect4, player):
     if connect4.wins == player:
-        return 1
+        return 4
     elif connect4.wins is None:
+        for four in connect4.iter_fours():
+            if four.count(player) == 3:
+                return 3
+            elif four.count(player) == 2:
+                return 2
+            elif four.count(player) == 1:
+                return 1
         return 0
     else:
         return -1
