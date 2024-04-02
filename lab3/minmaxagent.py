@@ -56,6 +56,6 @@ class MinMaxAgent:
         if connect4.who_moves != self.my_token:
             raise AgentException('not my round')
         connect4_copy = copy.deepcopy(connect4)
-        minimax, move = minmax(connect4_copy, 4, True, self.my_token)
+        minimax, move = minmax(connect4_copy, 4, True, self.my_token) #4 is optimal
         return move
 
