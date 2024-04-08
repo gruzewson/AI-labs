@@ -5,74 +5,72 @@ import random
 from connect4 import Connect4
 from exceptions import AgentException
 
-def evaluation(connect4, player, move):
-
+def evaluation(connect4, player):
     if connect4.wins == player:
         return 1
-    elif connect4.wins is None:
-        center_y = connect4.height // 2
-        center_x = connect4.width // 2
-        if(connect4.width % 2 == 0):
-            center_x += 0.5
-        if (connect4.height % 2 == 0):
-            center_y += 0.5
-
-        n_row = 0
-        while n_row + 1 < connect4.height and connect4.board[n_row + 1][move] == '_':
-            n_row += 1
-        dist_to_center = math.sqrt((center_x - move)**2 + (center_y - n_row)**2)
-        #print(f" move: {move} , {1 / dist_to_center}")
-        # for four in connect4.iter_fours():
-        #     if four.count(player) == 3:
-        #         return 0.6
-        #     elif four.count(player) == 2:
-        #         return 0.4
-        #     elif four.count(player) == 1:
-        #         return 0.2
-        if dist_to_center != 0:
-            return 1 / dist_to_center
-        else:
-            return 1
-    else:
+    elif connect4.wins is not None:
         return -1
+    else:
+        score = 0
+        center_column = connect4.width // 2
+
+        for col in range(connect4.width):
+            tokens_in_col = 0
+            while tokens_in_col + 1 < connect4.height and connect4.board[tokens_in_col + 1][center_column] == '_':
+                tokens_in_col += 1
+            if tokens_in_col > 0:
+                score += (1 if col == center_column else 0.5) * tokens_in_col
+
+        for four in connect4.iter_fours():
+            player_tokens = four.count(player)
+            empty_slots = four.count('_')
+            if player_tokens == 3 and empty_slots == 1:
+                score += 0.6 / connect4.width
+            elif player_tokens == 2 and empty_slots == 2:
+                score += 0.4 / connect4.width
+            elif player_tokens == 1 and empty_slots == 3:
+                score += 0.2 / connect4.width
+
+        max_possible_score = connect4.width * connect4.height
+        normalized_score = score / max_possible_score
+        return normalized_score
+
+
 
 def alphabeta(connect4, depth, alpha, beta, max_player, initial_player):
     if connect4.game_over or depth == 0:
-        center_column = connect4.width // 2
-        if center_column in connect4.possible_drops():
-            move = center_column
-        else:
-            move = connect4.possible_drops()[0]
-        return evaluation(connect4, initial_player, move), move
+        return evaluation(connect4, initial_player), None
 
     if max_player:
         max_eval = -math.inf
+        best_move = None
         for m in connect4.possible_drops():
             connect4_copy = copy.deepcopy(connect4)
             connect4_copy.drop_token(m)
-            eval, move = alphabeta(connect4_copy, depth - 1, alpha, beta, False, initial_player)
-            #print(f"eval max: {eval}")
-            max_eval = max(max_eval, eval)
-            if max_eval == eval:
-                move = m
+            eval, _ = alphabeta(connect4_copy, depth - 1, alpha, beta, False, initial_player)
+            if eval > max_eval:
+                max_eval = eval
+                best_move = m
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
-        return max_eval, move
+        return max_eval, best_move
+
     else:
         min_eval = math.inf
+        best_move = None
         for m in connect4.possible_drops():
             connect4_copy = copy.deepcopy(connect4)
             connect4_copy.drop_token(m)
-            eval, move = alphabeta(connect4_copy, depth - 1, alpha, beta, True, initial_player)
-            #print(f"eval min: {eval}")
-            min_eval = min(min_eval, eval)
-            if min_eval == eval:
-                move = m
+            eval, _ = alphabeta(connect4_copy, depth - 1, alpha, beta, True, initial_player)
+            if eval < min_eval:
+                min_eval = eval
+                best_move = m
             beta = min(beta, eval)
             if beta <= alpha:
                 break
-        return min_eval, move
+        return min_eval, best_move
+
 
 class AlphaBetaAgent:
     def __init__(self, my_token='o'):
@@ -81,7 +79,5 @@ class AlphaBetaAgent:
     def decide(self, connect4):
         if connect4.who_moves != self.my_token:
             raise AgentException('not my round')
-        connect4_copy = copy.deepcopy(connect4)
-        alphabet, move = alphabeta(connect4_copy, 5, -math.inf, math.inf, True, self.my_token) #6 is optimal
-        return move
+        return alphabeta(connect4, 4, -math.inf, math.inf, True, self.my_token)[1]
 
