@@ -1,4 +1,5 @@
 import copy
+import math
 
 import numpy as np
 
@@ -54,9 +55,11 @@ class Node:
 
         # TODO implement feature selection
         if feature_subset is None:
-            feature_subset = range(X.shape[1])
-
-        for d in feature_subset:
+            feature_subset = int(math.sqrt(X.shape[1]) + 1)
+        #print(feature_subset)
+        selected_features = np.random.choice(X.shape[1], feature_subset, replace=False)
+        #print(selected_features)
+        for d in selected_features:
             order = np.argsort(X[:, d])
             y_sorted = y[order]
             possible_splits = self.find_possible_splits(X[order, d])
