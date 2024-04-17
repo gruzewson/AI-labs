@@ -28,10 +28,8 @@ class RandomForest:
         return forest_predictions
 
     def bagging(self, X, y):
-        X_selected, y_selected = None, None
         # TODO implement bagging
         num_samples = X.shape[0]
         indices = np.random.choice(num_samples, size=num_samples, replace=True)
         X_selected, y_selected = X[indices], y[indices]
-
         return X_selected, y_selected

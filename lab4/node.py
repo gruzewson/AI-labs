@@ -17,24 +17,23 @@ class Node:
         best_idx = 0
         # TODO find position of best data split
         for split in possible_splits:
-            left_mask = y < split
-            right_mask = y >= split
+            left_mask = y[:split+1]
+            right_mask = y[split:]
 
-            left_pos = np.sum(y[left_mask] == 1)
-            left_neg = np.sum(y[left_mask] == 0)
-            right_pos = np.sum(y[right_mask] == 1)
-            right_neg = np.sum(y[right_mask] == 0)
+            left_pos = np.sum(left_mask == 1)
+            left_neg = np.sum(left_mask == 0)
+            right_pos = np.sum(right_mask == 1)
+            right_neg = np.sum(right_mask == 0)
 
-            if left_pos + left_neg != 0 and right_pos + right_neg != 0:
-                gini_left = 1 - (left_pos/(left_pos + left_neg))**2 - (left_neg/(left_pos + left_neg))**2
-                gini_right = 1 - (right_pos / (right_pos + right_neg)) ** 2 - (right_neg / (right_pos + right_neg)) ** 2
-                left = left_pos + left_neg
-                right = right_pos + right_neg
-                gini_gain = 1 - (left/(left + right))*gini_left - (right/(right + left))*gini_right
+            gini_left = 1 - (left_pos/(left_pos + left_neg))**2 - (left_neg/(left_pos + left_neg))**2
+            gini_right = 1 - (right_pos / (right_pos + right_neg)) ** 2 - (right_neg / (right_pos + right_neg)) ** 2
+            left = left_pos + left_neg
+            right = right_pos + right_neg
+            gini_gain = 1 - ((left/(left + right))*gini_left) - ((right/(right + left))*gini_right)
 
-                if gini_gain > best_gain:
-                    best_gain = gini_gain
-                    best_idx = split
+            if gini_gain > best_gain:
+                best_gain = gini_gain
+                best_idx = split
 
         return best_idx, best_gain
 
@@ -55,11 +54,11 @@ class Node:
 
         # TODO implement feature selection
         if feature_subset is None:
-            feature_subset = int(math.sqrt(X.shape[1]) + 1)
-        #print(feature_subset)
-        selected_features = np.random.choice(X.shape[1], feature_subset, replace=False)
-        #print(selected_features)
-        for d in selected_features:
+            feature_subset = X.shape[1]
+
+        feature_subset = np.random.choice(X.shape[1], feature_subset, replace=True)
+
+        for d in feature_subset:
             order = np.argsort(X[:, d])
             y_sorted = y[order]
             possible_splits = self.find_possible_splits(X[order, d])
