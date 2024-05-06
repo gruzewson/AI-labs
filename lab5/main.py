@@ -23,10 +23,10 @@ def clustering(kmeans_pp):
     intra_class_variance = []
     for i in range(100):
         assignments, centroids, error = k_means(features, 3, kmeans_pp)
-        evaluate(assignments, classes)
+        #evaluate(assignments, classes)
         intra_class_variance.append(error)
     print(f"Mean intra-class variance: {np.mean(intra_class_variance)}")
 
 if __name__=="__main__":
     clustering(kmeans_pp = True)
-    # clustering(kmeans_pp = False)
+    clustering(kmeans_pp = False)
